@@ -33,8 +33,8 @@ def argmin_t(x1, x2, x3, p1, p2, p3):
         return float(tape.gradient(f, t_ins))
 
     t = 0.0
-    eps = 0.001
-    step = 0.01
+    eps = 0.0001
+    step = 0.1
     der = der_one_main_f(t)
 
     while der > eps:
