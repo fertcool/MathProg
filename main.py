@@ -38,7 +38,14 @@ def argmin_t(x1, x2, x3, p1, p2, p3):
     der = der_one_main_f(t)
 
     while der > eps:
-        t = t - step * der
+
+        t_up = t - step * der
+        while one_main_f(t) <= one_main_f(t_up):
+            step /= 2
+            t_up = t - step * der
+
+        t = t_up
+
         der = der_one_main_f(t)
     t = t - step * der
     return t
@@ -92,4 +99,29 @@ def grad_spusk_with_opt_step():
           , '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
 
 
-print(argmin_t(0,0,0, 1, 1,1))
+def grad_spusk_with_argmin_opt():
+    eps = 0.01
+    xk = np.array([0.0, 0.0, 0.0])
+    gradient = grad_f(xk[0], xk[1], xk[2])
+    gradient_norm = linalg.norm(gradient)
+
+    tk = abs(argmin_t(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+
+    print('x0=', list(xk), end='\n')
+    k = 1
+
+    while gradient_norm > eps:
+        xk = xk + -tk * gradient
+        print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+              "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
+        gradient = grad_f(xk[0], xk[1], xk[2])
+        gradient_norm = linalg.norm(gradient)
+        tk = abs(argmin_t(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+        k += 1
+
+    xk = xk + -tk * gradient
+    print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ', "{0:.3f}".format(xk[2])
+          , '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
+
+
+grad_spusk_with_argmin_opt()
