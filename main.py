@@ -94,24 +94,24 @@ class Tasks:
         xk = self.xk
         grudfunc = self.gradfunc
 
-        tk = 0.01
+        tk = 0.1  # должен быть прям маленьким(возможен перескок)
         gradient = grudfunc(xk[0], xk[1], xk[2])
         gradient_norm = linalg.norm(gradient)
-        print('x0=', list(xk), end='\n')
+        print('Градиентный спуск с постоянным шагом:',tk, '\nx0=', list(xk), end='\n')
         k = 1
 
         while gradient_norm > eps:
             xk = xk + -tk * gradient
-            print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+            print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
                   "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
             gradient = grudfunc(xk[0], xk[1], xk[2])
             gradient_norm = linalg.norm(gradient)
             k += 1
 
         xk = xk + -tk * gradient
-        print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
-              "{0:.3f}".format(xk[2])
-              , '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
+        print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+             "{0:.3f}".format(xk[2])
+             , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
     def grad_spusk_with_opt_step(self):
 
@@ -122,7 +122,7 @@ class Tasks:
         tk = 0.1
         gradient = grudfunc(xk[0], xk[1], xk[2])
         gradient_norm = linalg.norm(gradient)
-        print('x0=', list(xk), end='\n')
+        print('Градиентный спуск с дроблением шага \nx0=', list(xk), end='\n')
         k = 1
 
         while gradient_norm > eps:
@@ -133,16 +133,16 @@ class Tasks:
                 xk_up = xk + -tk * gradient
             xk = xk_up
 
-            print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+            print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
                   "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
             gradient = grudfunc(xk[0], xk[1], xk[2])
             gradient_norm = linalg.norm(gradient)
             k += 1
 
         xk = xk + -tk * gradient
-        print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
-              "{0:.3f}".format(xk[2])
-              , '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
+        print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+             "{0:.3f}".format(xk[2])
+             , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
     def grad_spusk_with_argmin_opt(self):
 
@@ -154,24 +154,24 @@ class Tasks:
         gradient = grudfunc(xk[0], xk[1], xk[2])
         gradient_norm = linalg.norm(gradient)
 
-        tk = abs(argminfunc(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+        tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
 
-        print('x0=', list(xk), end='\n')
+        print('Наискорейший спуск \nx0=', list(xk), end='\n')
         k = 1
 
         while gradient_norm > eps:
             xk = xk + -tk * gradient
-            print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+            print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
                   "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
             gradient = grudfunc(xk[0], xk[1], xk[2])
             gradient_norm = linalg.norm(gradient)
-            tk = abs(argminfunc(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+            tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
             k += 1
 
         xk = xk + -tk * gradient
-        print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
-              "{0:.3f}".format(xk[2])
-              , '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
+        print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+             "{0:.3f}".format(xk[2])
+             , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
     def ordinate_spusk(self):
 
@@ -196,53 +196,92 @@ class Tasks:
         gradient = choose_grad(xk, 0)
         gradient_norm = linalg.norm(gradient)
 
-        tk = abs(argminfunc(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+        tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
 
-        print('x0=', list(xk), end='\n')
+        print('Покоординатный спуск \nx0=', list(xk), end='\n')
         k = 1
 
         while gradient_norm > eps:
             xk = xk + -tk * gradient
-            print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+            print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
                   "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
             gradient = choose_grad(xk, k)
             gradient_norm = linalg.norm(gradient)
-            tk = abs(argminfunc(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+            tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
             k += 1
 
         xk = xk + -tk * gradient
-        print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
-              "{0:.3f}".format(xk[2])
-              , '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
+        print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+             "{0:.3f}".format(xk[2])
+             , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
 
     def Newton(self):
         eps = self.eps
         xk = self.xk
         grudfunc = self.gradfunc
-        argminfunc = self.argminfunc
 
         gradient = grudfunc(xk[0], xk[1], xk[2])
-        pk = np.dot(linalg.inv(hessian_f()), gradient)
+        pk = -np.dot(linalg.inv(hessian_f()), gradient)
         gradient_norm = linalg.norm(gradient)
 
-
-
-        print('x0=', list(xk), end='\n')
+        print('Метод Ньютона \nx0=', list(xk), end='\n')
         k = 1
 
         while gradient_norm > eps:
-            xk = xk - pk
-            print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+            xk = xk + pk
+            print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
                   "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
             gradient = grudfunc(xk[0], xk[1], xk[2])
+            pk = -np.dot(linalg.inv(hessian_f()), gradient)
             gradient_norm = linalg.norm(gradient)
 
             k += 1
 
+        xk = xk + pk
+        print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+              "{0:.3f}".format(xk[2])
+              , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
+
+    def conjugate_grads(self):
+
+        eps = self.eps
+        xk = self.xk
+        grudfunc = self.gradfunc
+        argminfunc = self.argminfunc
+
+        gradient = grudfunc(xk[0], xk[1], xk[2])
+        pk = -gradient
+        gradient_norm = linalg.norm(gradient)
+
+        tk = abs(argminfunc(xk[0], xk[1], xk[2], pk[0], pk[1], pk[2]))
+
+        print('Метод сопряженных градиентов \nx0=', list(xk), end='\n')
+        k = 1
+
+        while gradient_norm > eps:
+            xk = xk + tk * pk
+            print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+                  "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
+            gradientback = gradient
+            gradient = grudfunc(xk[0], xk[1], xk[2])
+            gradient_norm = linalg.norm(gradient)
+            pk = -gradient + (gradient_norm**2)/(linalg.norm(gradientback)**2)*pk
+            tk = abs(argminfunc(xk[0], xk[1], xk[2], pk[0], pk[1], pk[2]))
+            k += 1
+
+        xk = xk + tk * pk
+        print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
+              "{0:.3f}".format(xk[2])
+              , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
 
 Launch = Tasks(0.01, np.array([0.0, 0.0, 0.0]), True)
+Launch.grad_spusk()
+Launch.grad_spusk_with_opt_step()
 Launch.grad_spusk_with_argmin_opt()
+Launch.ordinate_spusk()
 Launch.Newton()
+Launch.conjugate_grads()
+
 
