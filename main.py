@@ -226,26 +226,23 @@ class Tasks:
         pk = np.dot(linalg.inv(hessian_f()), gradient)
         gradient_norm = linalg.norm(gradient)
 
-        tk = abs(argminfunc(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+
 
         print('x0=', list(xk), end='\n')
         k = 1
 
         while gradient_norm > eps:
-            xk = xk + -tk * pk
+            xk = xk - pk
             print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
                   "{0:.3f}".format(xk[2]), '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
             gradient = grudfunc(xk[0], xk[1], xk[2])
             gradient_norm = linalg.norm(gradient)
-            tk = abs(argminfunc(xk[0], xk[1], xk[2], gradient[0], gradient[1], gradient[2]))
+
             k += 1
 
-        xk = xk + -tk * pk
-        print('k = ', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
-              "{0:.3f}".format(xk[2])
-              , '] ||grad(xk)|| = ', "{0:.3f}".format(gradient_norm))
 
 
 Launch = Tasks(0.01, np.array([0.0, 0.0, 0.0]), True)
+Launch.grad_spusk_with_argmin_opt()
 Launch.Newton()
 
