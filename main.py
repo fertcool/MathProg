@@ -5,7 +5,7 @@ import tensorflow as tf
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-
+# основная ф-я f(x)
 def main_f(x1, x2, x3):
     return 6 * x1 ** 2 + 4 * x2 ** 2 + 3 * x3 ** 2 + 3 * x1 * x2 - x2 * x3 + 10 * x2
 
@@ -34,11 +34,11 @@ def grad_f(z1: float, z2: float, z3: float):
 #         g = replace_none_with_zero(g)
 #     return t2.jacobian(g, [x1, x2, x3])
 
-
+# ф-я гессиана
 def hessian_f():
     return np.array([[12.0, 3.0, 0.0], [3.0, 8.0, -1.0], [0.0, -1.0, 6.0]])
 
-
+# ф-я градиента
 def grad_f_fast(x1: float, x2: float, x3: float):
     return np.array([12 * x1 + 3 * x2, 8 * x2 + 3 * x1 - x3 + 10, 6 * x3 - x2])
 
@@ -71,20 +71,20 @@ def argmin_t(x1, x2, x3, p1, p2, p3):
     t = t - step * der
     return t
 
-
+# ф-я поиска параметра t когда f(xk+t*pk)->min
 def argmin_t_fast(x1, x2, x3, p1, p2, p3):
     return -(12 * x1 * p1 + 8 * x2 * p2 + 6 * x3 * p3 + 3 * x1 * p2 + 3 * x2 * p1 - x2 * p3 - x3 * p2 + 10 * p2) \
         / (12 * p1 ** 2 + 8 * p2 ** 2 + 6 * p3 ** 2 + 6 * p1 * p2 - 2 * p2 * p3)
 
-
+# класс функций поиска минимума
 class Tasks:
     def __init__(self, eps, x0, fastmode):
         self.eps = eps
         self.xk = x0
-        if fastmode:
+        if fastmode: # выбор функций градиента и argmin
             self.gradfunc = grad_f_fast
             self.argminfunc = argmin_t_fast
-        else:
+        else: # функции для любой f(x) - медленные, но универсальные (в лр не будут описаны)
             self.gradfunc = grad_f
             self.argminfunc = argmin_t
 
@@ -113,8 +113,9 @@ class Tasks:
              "{0:.3f}".format(xk[2])
              , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
+    # ф-я градиентного спуска с дроблением шага
     def grad_spusk_with_opt_step(self):
-
+        # инициализация погрешности и начального вектора
         eps = self.eps
         xk = self.xk
         grudfunc = self.gradfunc
@@ -125,9 +126,11 @@ class Tasks:
         print('Градиентный спуск с дроблением шага \nx0=', list(xk), end='\n')
         k = 1
 
+        # основной цикл
         while gradient_norm > eps:
 
             xk_up = xk + -tk * gradient
+            # вычисление шага (tk: f(xk) > f(xk + tk * pk), где  pk - gradient)
             while main_f(xk[0], xk[1], xk[2]) <= main_f(xk_up[0], xk_up[1], xk_up[2]):
                 tk /= 2
                 xk_up = xk + -tk * gradient
@@ -139,13 +142,15 @@ class Tasks:
             gradient_norm = linalg.norm(gradient)
             k += 1
 
+        #печать резульата
         xk = xk + -tk * gradient
         print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
              "{0:.3f}".format(xk[2])
              , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
+    # ф-я градиентного спуска с оптимизацией по шагу
     def grad_spusk_with_argmin_opt(self):
-
+        # инициализация погрешности и начального вектора
         eps = self.eps
         xk = self.xk
         grudfunc = self.gradfunc
@@ -154,11 +159,13 @@ class Tasks:
         gradient = grudfunc(xk[0], xk[1], xk[2])
         gradient_norm = linalg.norm(gradient)
 
+        # вычисление шага
         tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
 
         print('Наискорейший спуск \nx0=', list(xk), end='\n')
         k = 1
 
+        # основной цикл
         while gradient_norm > eps:
             xk = xk + -tk * gradient
             print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
@@ -168,18 +175,21 @@ class Tasks:
             tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
             k += 1
 
+        # печать резульата
         xk = xk + -tk * gradient
         print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
              "{0:.3f}".format(xk[2])
              , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
+    # ф-я покоординатного спуска
     def ordinate_spusk(self):
-
+        # инициализация погрешности и начального вектора
         eps = self.eps
         xk = self.xk
         grudfunc = self.gradfunc
         argminfunc = self.argminfunc
 
+        # выбор направления спуска
         def choose_grad(xk, k):
             if k % 3 == 0:
                 answ = np.array([grudfunc(xk[0], xk[1], xk[2])[0], 0.0, 0.0])
@@ -195,12 +205,13 @@ class Tasks:
 
         gradient = choose_grad(xk, 0)
         gradient_norm = linalg.norm(gradient)
-
+        # вычисление шага
         tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
 
         print('Покоординатный спуск \nx0=', list(xk), end='\n')
         k = 1
 
+        # основной цикл
         while gradient_norm > eps:
             xk = xk + -tk * gradient
             print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
@@ -210,24 +221,27 @@ class Tasks:
             tk = abs(argminfunc(xk[0], xk[1], xk[2], -gradient[0], -gradient[1], -gradient[2]))
             k += 1
 
+        # печать резульата
         xk = xk + -tk * gradient
         print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
              "{0:.3f}".format(xk[2])
              , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
-
+    # метод ньютона
     def Newton(self):
+        # инициализация погрешности и начального вектора
         eps = self.eps
         xk = self.xk
         grudfunc = self.gradfunc
 
         gradient = grudfunc(xk[0], xk[1], xk[2])
+        # вычисление вектора pk
         pk = -np.dot(linalg.inv(hessian_f()), gradient)
         gradient_norm = linalg.norm(gradient)
 
         print('Метод Ньютона \nx0=', list(xk), end='\n')
         k = 1
-
+        # основной цикл
         while gradient_norm > eps:
             xk = xk + pk
             print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
@@ -237,28 +251,32 @@ class Tasks:
             gradient_norm = linalg.norm(gradient)
 
             k += 1
-
+        # печать резульата
         xk = xk + pk
         print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
               "{0:.3f}".format(xk[2])
               , '] inaccuracy = ', "{0:.3f}".format(gradient_norm), end='\n\n')
 
+    # метод сопряженных градиентов
     def conjugate_grads(self):
-
+        # инициализация погрешности и начального вектора
         eps = self.eps
         xk = self.xk
         grudfunc = self.gradfunc
         argminfunc = self.argminfunc
 
         gradient = grudfunc(xk[0], xk[1], xk[2])
+        # изначально pk - антиградиент
         pk = -gradient
         gradient_norm = linalg.norm(gradient)
 
+        # вычисление шага
         tk = abs(argminfunc(xk[0], xk[1], xk[2], pk[0], pk[1], pk[2]))
 
         print('Метод сопряженных градиентов \nx0=', list(xk), end='\n')
         k = 1
 
+        # основной цикл
         while gradient_norm > eps:
             xk = xk + tk * pk
             print('k =', k, '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
@@ -266,10 +284,13 @@ class Tasks:
             gradientback = gradient
             gradient = grudfunc(xk[0], xk[1], xk[2])
             gradient_norm = linalg.norm(gradient)
+
+            # вычисление pk по формуле Флетчера-Ривса
             pk = -gradient + (gradient_norm**2)/(linalg.norm(gradientback)**2)*pk
             tk = abs(argminfunc(xk[0], xk[1], xk[2], pk[0], pk[1], pk[2]))
             k += 1
 
+        # печать результата
         xk = xk + tk * pk
         print('answ:', '  ', 'xk = [', "{0:.3f}".format(xk[0]), ' ', "{0:.3f}".format(xk[1]), ' ',
               "{0:.3f}".format(xk[2])
